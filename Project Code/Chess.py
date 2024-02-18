@@ -4,10 +4,6 @@ import random
 from Variables import *
 pygame.init()
 
-#openai.api_key = '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'
-#model_engine = 'gpt-3.5-turbo'
-
-
 #Check Valid Move Options on Board for Pieces
 def checkMoveOptions(pieces, locations, turns):
     global castleMoves
@@ -293,13 +289,8 @@ def checkKingMoves(position, color):
 
     for i in range(8):
         targets = (position[0] + targetSquares[i][0], position[1] + targetSquares[i][1])
-
-        if not inCheck:
-            if targets not in friendList and 0 <= targets[0] <= 7 and 0 <= targets[1] <= 7:
-                moveList.append(targets)
-        if inCheck:
-            moveList.remove(targets)
-
+        if targets not in friendList and 0 <= targets[0] <= 7 and 0 <= targets[1] <= 7:
+            moveList.append(targets)
 
     return moveList, castlingMoves
 
@@ -385,6 +376,7 @@ def checkCastling():
                     castlingMoves.append((emptyTiles[1], emptyTiles[0]))
 
     return castlingMoves
+
 
 #Draws the Main Menu
 def drawMainMenu():
@@ -831,7 +823,7 @@ while runGame:
                     if click in blackPiecesLocation:
                         landedOnBlackPiece = blackPiecesLocation.index(click)
                         whiteCaptured.append(blackPieces[landedOnBlackPiece])
-                        # If Statement for Black King in Check
+                        #If Statement for Black King in Check
                         if blackPieces[landedOnBlackPiece] == 'King':
                             winner = 'White'
                         blackPieces.pop((landedOnBlackPiece))
