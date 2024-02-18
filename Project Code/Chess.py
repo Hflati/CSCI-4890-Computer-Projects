@@ -294,33 +294,6 @@ def checkKingMoves(position, color):
 
     return moveList, castlingMoves
 
-#def ifInCheck(position, color):
-    moveList = checkKingMoves(position, color)
-    if color == 'White':
-        friendList = whitePiecesLocation
-        targetSquares = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
-
-        for i in range(8):
-            targets = (position[0] + targetSquares[i][0], position[1] + targetSquares[i][1])
-
-            if targets not in friendList and 0 <= targets[0] <= 7 and 0 <= targets[1] <= 7 and inCheck == True and targets in blackMoveOptions:
-                moveList.remove(targets)
-                print('Removed')
-    
-    else:
-        kingIndex = blackPieces.index('King')
-        kingLocation = blackPiecesLocation[kingIndex]
-
-        for i in range(len(whiteMoveOptions)):
-            if kingLocation in whiteMoveOptions[i] and inCheck:
-                moveList.remove(whiteMoveOptions[i])
-                print('Removed')
-    
-
-    return moveList
-
-
-
 #Check for Possible Castling From Selected King
 def checkCastling():
     #King Not in Check, Rook or King Never Moved, Tiles Between the Two are Empty, and King Does Not Pass Through or Land on Tile Being Attacked
@@ -376,7 +349,6 @@ def checkCastling():
                     castlingMoves.append((emptyTiles[1], emptyTiles[0]))
 
     return castlingMoves
-
 
 #Draws the Main Menu
 def drawMainMenu():
@@ -566,6 +538,23 @@ def drawCheck():
                     inCheck = True
                     if counter < 15:
                         pygame.draw.rect(screen, 'gold', [blackPiecesLocation[kingIndex][0] * 100 + 52, blackPiecesLocation[kingIndex][1] * 100 + 1, 100, 100], 5)
+
+def kingInCheck():
+    if 'King' in whitePieces:
+        kingIndex = whitePieces.index('King')
+        kingLocation = whitePiecesLocation[kingIndex]
+        for i in range(len(blackMoveOptions)):
+            if kingLocation in blackMoveOptions[i]:
+                kingInCheck = True
+    
+    if 'King' in blackPieces:
+        kingIndex = blackPieces.index('King')
+        kingLocation = blackPiecesLocation[kingIndex]
+        for i in range(len(whiteMoveOptions)):
+            if kingLocation in whiteMoveOptions[i]:
+                kingInCheck = True
+
+    return kingInCheck
 
 #Game Over
 def drawGameOver():
