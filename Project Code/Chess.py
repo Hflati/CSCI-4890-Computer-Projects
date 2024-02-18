@@ -582,28 +582,20 @@ def makeRandomMove():
     global turn, blackPiecesLocation, blackMoveOptions
 
     #Black's turn (AI's turn)
-    if turn == 2:
+    if turn == 2 and blackPiecesLocation:
         # Choose a random piece to move
         aiPieceIndex = random.randint(0, len(blackPiecesLocation) - 1)
-        aiPieceLocation = blackPiecesLocation[aiPieceIndex]
 
         # Choose a random valid move for the selected piece
         aiPossibleMoves = blackMoveOptions[aiPieceIndex]
-        aiMove = random.choice(aiPossibleMoves)
+        aiMove = random.choice(aiPossibleMoves) #<-------- ERROR
 
-        # Update the board state
-        blackPiecesLocation[aiPieceIndex] = aiMove
-
-        if aiPieceLocation in blackPiecesLocation:
-            selection = blackPiecesLocation.index(aiPieceLocation)
-            #Check What Piece is Selected, Draws Castling Move if King is Selected
-            selectedPiece = blackPieces[selection]
-        if aiPieceLocation in possibleMoves and selection != 111:
+        if aiMove in possibleMoves and selection != 111:
             blackEnPassant = checkEnPassant(blackPiecesLocation[selection], click)
             blackPiecesLocation[selection] = click
             blackMoved[selection] = True
         #White Piece Captured
-        if aiPieceLocation in whitePiecesLocation:
+        if aiMove in whitePiecesLocation:
             landedOnWhitePiece = whitePiecesLocation.index(click)
             blackCaptured.append(whitePieces[landedOnWhitePiece])
             # If Statement for White King in Check
@@ -614,12 +606,16 @@ def makeRandomMove():
                 whiteMoved.pop(landedOnWhitePiece)
 
         #White En Passant Piece Captured
-        if aiPieceLocation == whiteEnPassant:
+        if aiMove == whiteEnPassant:
             landedOnWhitePiece = whitePiecesLocation.index((whiteEnPassant[0], whiteEnPassant[1] - 1))
             blackCaptured.append(whitePieces[landedOnWhitePiece])
             whitePieces.pop((landedOnWhitePiece))
             whitePiecesLocation.pop(landedOnWhitePiece)
             whiteMoved.pop(landedOnWhitePiece)
+
+        # Update the board state
+        blackPiecesLocation[aiPieceIndex] = aiMove
+        turn = 0
 
 #Main Menu
 while runMainMenu:
@@ -1096,7 +1092,6 @@ while runCPUGame:
                 makeRandomMove()
                 blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
                 whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                turn = 0
                 selection = 111
                 possibleMoves = []
 
