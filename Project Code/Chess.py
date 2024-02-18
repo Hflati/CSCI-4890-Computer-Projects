@@ -1091,8 +1091,7 @@ while runCPUGame:
                             selection = 111
                             possibleMoves = []
 
-#Allowing the Game to Understand a Left Mouse Button Click for Black's Turn
-                            
+#Allowing the Game to Understand Black AI's turn      
             if turn == 2:
                 makeRandomMove()
                 blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
