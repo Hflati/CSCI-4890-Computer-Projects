@@ -577,6 +577,50 @@ def drawGameOver():
 blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
 whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
 
+# AI Move Function
+def makeRandomMove():
+    global turn, blackPiecesLocation, blackMoveOptions
+
+    #Black's turn (AI's turn)
+    if turn == 2:
+        # Choose a random piece to move
+        aiPieceIndex = random.randint(0, len(blackPiecesLocation) - 1)
+        aiPieceLocation = blackPiecesLocation[aiPieceIndex]
+
+        # Choose a random valid move for the selected piece
+        aiPossibleMoves = blackMoveOptions[aiPieceIndex]
+        aiMove = random.choice(aiPossibleMoves)
+
+        # Update the board state
+        blackPiecesLocation[aiPieceIndex] = aiMove
+
+        if aiPieceLocation in blackPiecesLocation:
+            selection = blackPiecesLocation.index(aiPieceLocation)
+            #Check What Piece is Selected, Draws Castling Move if King is Selected
+            selectedPiece = blackPieces[selection]
+        if aiPieceLocation in possibleMoves and selection != 111:
+            blackEnPassant = checkEnPassant(blackPiecesLocation[selection], click)
+            blackPiecesLocation[selection] = click
+            blackMoved[selection] = True
+        #White Piece Captured
+        if aiPieceLocation in whitePiecesLocation:
+            landedOnWhitePiece = whitePiecesLocation.index(click)
+            blackCaptured.append(whitePieces[landedOnWhitePiece])
+            # If Statement for White King in Check
+            if whitePieces[landedOnWhitePiece] == 'King':
+                winner = 'Black'
+                whitePieces.pop((landedOnWhitePiece))
+                whitePiecesLocation.pop(landedOnWhitePiece)
+                whiteMoved.pop(landedOnWhitePiece)
+
+        #White En Passant Piece Captured
+        if aiPieceLocation == whiteEnPassant:
+            landedOnWhitePiece = whitePiecesLocation.index((whiteEnPassant[0], whiteEnPassant[1] - 1))
+            blackCaptured.append(whitePieces[landedOnWhitePiece])
+            whitePieces.pop((landedOnWhitePiece))
+            whitePiecesLocation.pop(landedOnWhitePiece)
+            whiteMoved.pop(landedOnWhitePiece)
+
 #Main Menu
 while runMainMenu:
     screen.fill(color)
@@ -1024,7 +1068,7 @@ while runCPUGame:
 
                     blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
                     whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                    turn = 3
+                    turn = 2
                     selection = 111
                     possibleMoves = []
 
@@ -1043,67 +1087,19 @@ while runCPUGame:
 
                             blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
                             whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                            turn = 3
+                            turn = 2
                             selection = 111
                             possibleMoves = []
 
 #Allowing the Game to Understand a Left Mouse Button Click for Black's Turn
-            if turn > 1:
-                aiMove = random.randint(0, 63)
-                #Forfeit Click
-                if click == (7, 8) or click == (8, 8) or click == (7, 9) or click == (8, 9):
-                    winner = 'White'
-                if aiMove in blackPiecesLocation:
-                    selection = aiMove
-                    #Check What Piece is Selected, Draws Castling Move if King is Selected
-                    selectedPiece = blackPieces[selection]
-                if aiMove in possibleMoves and selection != 111:
-                    blackEnPassant = checkEnPassant(blackPiecesLocation[selection], click)
-                    blackPiecesLocation[selection] = click
-                    blackMoved[selection] = True
-                    #White Piece Captured
-                    if aiMove in whitePiecesLocation:
-                        landedOnWhitePiece = whitePiecesLocation.index(click)
-                        blackCaptured.append(whitePieces[landedOnWhitePiece])
-                        # If Statement for White King in Check
-                        if whitePieces[landedOnWhitePiece] == 'King':
-                            winner = 'Black'
-                        whitePieces.pop((landedOnWhitePiece))
-                        whitePiecesLocation.pop(landedOnWhitePiece)
-                        whiteMoved.pop(landedOnWhitePiece)
-
-                    #White En Passant Piece Captured
-                    if aiMove == whiteEnPassant:
-                        landedOnWhitePiece = whitePiecesLocation.index((whiteEnPassant[0], whiteEnPassant[1] - 1))
-                        blackCaptured.append(whitePieces[landedOnWhitePiece])
-                        whitePieces.pop((landedOnWhitePiece))
-                        whitePiecesLocation.pop(landedOnWhitePiece)
-                        whiteMoved.pop(landedOnWhitePiece)
-
-                    blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
-                    whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                    turn = 0
-                    selection = 111
-                    possibleMoves = []
-
-                #Option For Black to Castle
-                elif selection != 111 and selectedPiece == 'King':
-                    for k in range(len(castleMoves)):
-                        if aiMove == castleMoves[k][0]:
-                            blackPiecesLocation[selection] = click
-                            blackMoved[selection] = True
-                            if aiMove == (2, 0):
-                               rookCoordinates = (0, 0)
-                            elif aiMove == (6, 0):
-                                rookCoordinates = (7, 0)
-                            rookIndex = blackPiecesLocation.index(rookCoordinates)
-                            blackPiecesLocation[rookIndex] = castleMoves[k][1]
-
-                            blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
-                            whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                            turn = 0
-                            selection = 111
-                            possibleMoves = []
+                            
+            if turn == 2:
+                makeRandomMove()
+                blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
+                whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
+                turn = 0
+                selection = 111
+                possibleMoves = []
 
 #Reinitialize the Game
         if event.type == pygame.KEYDOWN and gameOver:
