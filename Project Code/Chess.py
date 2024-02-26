@@ -1,6 +1,5 @@
 import pygame
 import random
-#import openai
 from Variables import *
 pygame.init()
 
@@ -582,28 +581,34 @@ def makeRandomMove():
     global turn, blackPiecesLocation, blackMoveOptions
 
     #Black's turn (AI's turn)
-    if turn == 2 and blackPiecesLocation:
-        # Choose a random piece to move
+    if turn == 2: 
+        #Choose a random piece to move
         aiPieceIndex = random.randint(0, len(blackPiecesLocation) - 1)
 
-        # Choose a random valid move for the selected piece
+        #Choose a random valid move for the selected piece
         aiPossibleMoves = blackMoveOptions[aiPieceIndex]
-        aiMove = random.choice(aiPossibleMoves) #<-------- ERROR
+        while not aiPossibleMoves:
+            aiPieceIndex = random.randint(0, len(blackPiecesLocation) - 1)
+            aiPossibleMoves = blackMoveOptions[aiPieceIndex]
+            pass
+        
+        aiMove = random.choice(aiPossibleMoves)
 
         if aiMove in possibleMoves and selection != 111:
-            blackEnPassant = checkEnPassant(blackPiecesLocation[selection], click)
-            blackPiecesLocation[selection] = click
+            blackEnPassant = checkEnPassant(blackPiecesLocation[selection], aiMove)
+            blackPiecesLocation[selection] = aiMove
             blackMoved[selection] = True
         #White Piece Captured
         if aiMove in whitePiecesLocation:
-            landedOnWhitePiece = whitePiecesLocation.index(click)
+            landedOnWhitePiece = whitePiecesLocation.index(aiMove)
             blackCaptured.append(whitePieces[landedOnWhitePiece])
             # If Statement for White King in Check
             if whitePieces[landedOnWhitePiece] == 'King':
                 winner = 'Black'
-                whitePieces.pop((landedOnWhitePiece))
-                whitePiecesLocation.pop(landedOnWhitePiece)
-                whiteMoved.pop(landedOnWhitePiece)
+
+            whitePieces.pop((landedOnWhitePiece))
+            whitePiecesLocation.pop(landedOnWhitePiece)
+            whiteMoved.pop(landedOnWhitePiece)
 
         #White En Passant Piece Captured
         if aiMove == whiteEnPassant:
@@ -616,6 +621,7 @@ def makeRandomMove():
         # Update the board state
         blackPiecesLocation[aiPieceIndex] = aiMove
         turn = 0
+
 
 #Main Menu
 while runMainMenu:
