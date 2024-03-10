@@ -119,7 +119,7 @@ castlingPictureBig = pygame.transform.scale(castlingPictureBig, (600, 600))
 
 #Handles Which Player's Turn it is and List of Possible Moves to Make on That Turn
 turn = 0
-selection = 111
+selection = -1
 possibleMoves = []
 counter = 0
 winner = ''
@@ -128,7 +128,7 @@ whiteEnPassant = (111, 111)
 blackEnPassant = (111, 111)
 whitePromote = False
 blackPromote = False
-promoteIndex = 111
+promoteIndex = -1
 inCheck = False
 castleMoves = []
 mainMenu = True
