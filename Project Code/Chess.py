@@ -10,6 +10,7 @@ def checkMoveOptions(pieces, locations, turns):
     totalMoveList = []
     castleMoves = []
 
+    #Goes Through Each Movelist per Piece
     for i in range((len(pieces))):
         location = locations[i]
         piece = pieces[i]
@@ -26,10 +27,7 @@ def checkMoveOptions(pieces, locations, turns):
         elif piece == 'King':
             if inCheck == False:
                 moveList, castleMoves = checkKingMoves(location, turns)
-            #else:
-                #moveList = ifInCheck(location, turns)
             
-
         totalMoveList.append(moveList)
 
     return totalMoveList
@@ -88,12 +86,14 @@ def checkPawnMoves(position, color):
 
     return moveList
 
-#Check if En Passant is 
+#Check if En Passant is Available
 def checkEnPassant(oldCoordinates, newCoordinates):
+    #For White
     if turn <= 1:
         index = whitePiecesLocation.index(oldCoordinates)
         enPassant = (newCoordinates[0], newCoordinates[1] + 1)
         piece = whitePieces[index]
+    #For Black
     else:
         index = blackPiecesLocation.index(oldCoordinates)
         enPassant = (newCoordinates[0], newCoordinates[1] - 1)
@@ -140,9 +140,11 @@ def checkPawnPromotionSelection():
     leftClick = pygame.mouse.get_pressed()[0]
     xPosition = mousePosition[0] // 110
     yPosition = mousePosition[1] // 110
+    #For White
     if whitePromote and leftClick and xPosition > 7 and yPosition < 4:
         whitePieces[promoteIndex] = whitePromotions[yPosition]
         promoteSFX.play()
+    #For Black
     elif blackPromote and leftClick and xPosition > 7 and yPosition < 4:
         blackPieces[promoteIndex] = blackPromotions[yPosition]
         promoteSFX.play()
@@ -183,6 +185,7 @@ def checkRookMoves(position, color):
             x = 1
             y = 0
 
+        #Appends Movement To a Pathway
         while pathway:
             if(position[0] + (chain * x), position[1] + (chain * y)) not in friendList and 0 <= position[0] + (chain * x) <= 7 and 0 <= position[1] + (chain * y) <= 7:
                 moveList.append((position[0] + (chain * x), position[1] + (chain * y)))
@@ -252,6 +255,7 @@ def checkBishopMoves(position, color):
             x = -1
             y = 1
 
+        #Appends Movement To a Pathway
         while pathway:
             if(position[0] + (chain * x), position[1] + (chain * y)) not in friendList and 0 <= position[0] + (chain * x) <= 7 and 0 <= position[1] + (chain * y) <= 7:
                 moveList.append((position[0] + (chain * x), position[1] + (chain * y)))
@@ -267,6 +271,7 @@ def checkBishopMoves(position, color):
 
 #Check Possible Queen Moves
 def checkQueenMoves(position, color):
+    #Takes the 2 Existing movelists of the Rook and Bishop since Queen is a combo of the 2
     moveList = checkBishopMoves(position, color)
     moveList2 = checkRookMoves(position, color)
     
@@ -298,7 +303,7 @@ def checkKingMoves(position, color):
 #Check for Possible Castling From Selected King
 def checkCastling():
     #King Not in Check, Rook or King Never Moved, Tiles Between the Two are Empty, and King Does Not Pass Through or Land on Tile Being Attacked
-    castlingMoves = [] #Store as [((kingCoordinates), (rookCoordinates))]
+    castlingMoves = [] #Stored as [((kingCoordinates), (rookCoordinates))]
     rookIndices = []
     rookPosition = []
     kingIndex = 0
@@ -547,12 +552,12 @@ def kingInCheck():
     inCheck = False
 
     if turn < 2:
-        # White's turn
+        #White's turn
         king_index = whitePieces.index('King')
         king_location = whitePiecesLocation[king_index]
         enemy_moves = blackMoveOptions
     else:
-        # Black's turn
+        #Black's turn
         king_index = blackPieces.index('King')
         king_location = blackPiecesLocation[king_index]
         enemy_moves = whiteMoveOptions
@@ -560,13 +565,9 @@ def kingInCheck():
     for moves in enemy_moves:
         if king_location in moves:
             inCheck = True
-            break  # Exit the loop as soon as you find one move that puts the king in check
+            break  #Exit the loop as soon as it finds one move that puts the king in check
 
     return inCheck
-
-
-#def revertMove():
-
 
 #Game Over
 def drawGameOver():
@@ -877,6 +878,7 @@ while runGame:
                     temp_location = whitePiecesLocation[selection]
                     whitePiecesLocation[selection] = click
 
+                    #Not in Check
                     if not kingInCheck():
                         #The Move is Valid
                         whiteMoved[selection] = True
@@ -887,6 +889,7 @@ while runGame:
                         selection = -1
                         possibleMoves = []
 
+                    #In Check
                     elif kingInCheck():
                         #Undo Invalid Move, Leaves the King in Check
                         whitePiecesLocation[selection] = temp_location  #Reset the moved status
