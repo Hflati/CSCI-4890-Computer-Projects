@@ -108,14 +108,24 @@ pawnPromotionPictureSmall = pygame.image.load('..\Misc. Images\Pawn Promotion.pn
 pawnPromotionPictureSmall = pygame.transform.scale(pawnPromotionPictureSmall, (350, 350))
 enPassantPictureSmall = pygame.image.load('..\Misc. Images\En Passant.png')
 enPassantPictureSmall = pygame.transform.scale(enPassantPictureSmall, (350, 350))
-castlingPictureSmall= pygame.image.load('..\Misc. Images\Castling.png')
+castlingPictureSmall = pygame.image.load('..\Misc. Images\Castling.png')
 castlingPictureSmall = pygame.transform.scale(castlingPictureSmall, (350, 350))
 pawnPromotionPictureBig = pygame.image.load('..\Misc. Images\Pawn Promotion.png')
 pawnPromotionPictureBig = pygame.transform.scale(pawnPromotionPictureBig, (600, 600))
 enPassantPictureBig = pygame.image.load('..\Misc. Images\En Passant.png')
 enPassantPictureBig = pygame.transform.scale(enPassantPictureBig, (600, 600))
-castlingPictureBig= pygame.image.load('..\Misc. Images\Castling.png')
+castlingPictureBig = pygame.image.load('..\Misc. Images\Castling.png')
 castlingPictureBig = pygame.transform.scale(castlingPictureBig, (600, 600))
+
+#SFX
+pieceMovingSFX = pygame.mixer.Sound('..\SFX\Piece Moving SFX.mp3')
+pieceCapturedSFX = pygame.mixer.Sound('..\SFX\Piece Captured SFX.mp3')
+checkSFX = pygame.mixer.Sound('..\SFX\Check SFX.mp3')
+checkSFX.set_volume(0.5)
+victorySFX = pygame.mixer.Sound('..\SFX\Victory SFX.mp3')
+victorySFX.set_volume(0.5)
+promoteSFX = pygame.mixer.Sound('..\SFX\Promote SFX.mp3')
+pageFlipSFX = pygame.mixer.Sound('..\SFX\Page Flip SFX.mp3')
 
 #Handles Which Player's Turn it is and List of Possible Moves to Make on That Turn
 turn = 0
@@ -129,6 +139,7 @@ blackEnPassant = (111, 111)
 whitePromote = False
 blackPromote = False
 promoteIndex = -1
+global inCheck
 inCheck = False
 castleMoves = []
 mainMenu = True
@@ -136,6 +147,12 @@ runMainMenu = True
 runGame = False
 runTutorial = False
 runCPUGame = False
+global previousLocation
+previousLocation = ''
+global previousPiece
+previousPiece = ''
+global previousMove
+previousMove = []
 
 class Button:
     def __init__(self, txt, pos):

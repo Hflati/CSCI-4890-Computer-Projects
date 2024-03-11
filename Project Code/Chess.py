@@ -142,8 +142,10 @@ def checkPawnPromotionSelection():
     yPosition = mousePosition[1] // 110
     if whitePromote and leftClick and xPosition > 7 and yPosition < 4:
         whitePieces[promoteIndex] = whitePromotions[yPosition]
+        promoteSFX.play()
     elif blackPromote and leftClick and xPosition > 7 and yPosition < 4:
         blackPieces[promoteIndex] = blackPromotions[yPosition]
+        promoteSFX.play()
 
 #Check Possible Rook Moves
 def checkRookMoves(position, color):
@@ -514,8 +516,6 @@ def drawCapturedPieces():
 
 #Flashes Box Around King if in Check
 def drawCheck():
-    global inCheck
-    inCheck = False
     if turn < 2:
         if 'King' in whitePieces:
             kingIndex = whitePieces.index('King')
@@ -526,6 +526,7 @@ def drawCheck():
                     inCheck = True
                     if counter < 15:
                         pygame.draw.rect(screen, 'gold', [whitePiecesLocation[kingIndex][0] * 100 + 52, whitePiecesLocation[kingIndex][1] * 100 + 1, 100, 100], 5)
+                        checkSFX.play()
 
     else:
         if 'King' in blackPieces:
@@ -537,28 +538,35 @@ def drawCheck():
                     inCheck = True
                     if counter < 15:
                         pygame.draw.rect(screen, 'gold', [blackPiecesLocation[kingIndex][0] * 100 + 52, blackPiecesLocation[kingIndex][1] * 100 + 1, 100, 100], 5)
+                        checkSFX.play()
 
 def kingInCheck():
     king_index = -1
-    king_location = None
+    king_location = ''
     enemy_moves = []
+    inCheck = False
 
     if turn < 2:
-        #White's turn
+        # White's turn
         king_index = whitePieces.index('King')
         king_location = whitePiecesLocation[king_index]
         enemy_moves = blackMoveOptions
     else:
-        #Black's turn
+        # Black's turn
         king_index = blackPieces.index('King')
         king_location = blackPiecesLocation[king_index]
         enemy_moves = whiteMoveOptions
 
     for moves in enemy_moves:
         if king_location in moves:
-            return True
+            inCheck = True
+            break  # Exit the loop as soon as you find one move that puts the king in check
 
-    return False
+    return inCheck
+
+
+#def revertMove():
+
 
 #Game Over
 def drawGameOver():
@@ -696,6 +704,7 @@ while runTutorial:
             screen.blit(rightArrow, (875, 875))
             if rightArrowRect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 tutorialPage = 2
+                pageFlipSFX.play()
 
             leftArrowRectMainMenu = pygame.draw.rect(surface, color, [875, 25, 75, 75])
             screen.blit(surface, leftArrowRectMainMenu)
@@ -718,6 +727,7 @@ while runTutorial:
             screen.blit(smallFont.render('Pawn Promotion', True, 'white'), (160, 450))
             if pawnPromotionClick.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 tutorialPage = 3
+                pageFlipSFX.play()
 
             #En Passant
             enPassantClick = pygame.draw.rect(surface, color, [550, 100, 350, 350])
@@ -727,6 +737,7 @@ while runTutorial:
             screen.blit(smallFont.render('En Passant', True, 'white'), (650, 450))
             if enPassantClick.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 tutorialPage = 4
+                pageFlipSFX.play()
 
             #Castling
             castlingClick = pygame.draw.rect(surface, color, [325, 500, 350, 350])
@@ -736,12 +747,14 @@ while runTutorial:
             screen.blit(smallFont.render('Castling', True, 'white'), (450, 850))
             if castlingClick.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 tutorialPage = 5
+                pageFlipSFX.play()
 
             leftArrowRect = pygame.draw.rect(surface, color, [75, 875, 75, 75])
             screen.blit(surface, leftArrowRect)
             screen.blit(leftArrow, (75, 875))
             if leftArrowRect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 tutorialPage = 1
+                pageFlipSFX.play()
 
         #Pawn Promotion Page
         if tutorialPage == 3:
@@ -758,6 +771,7 @@ while runTutorial:
             screen.blit(leftArrow, (75, 875))
             if leftArrowRectP3.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 tutorialPage = 1
+                pageFlipSFX.play()
 
         #En Passant Page
         if tutorialPage == 4:
@@ -778,6 +792,7 @@ while runTutorial:
             screen.blit(leftArrow, (75, 875))
             if leftArrowRectP4.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 tutorialPage = 1
+                pageFlipSFX.play()
 
         #Castling Page
         if tutorialPage == 5:
@@ -801,6 +816,7 @@ while runTutorial:
             screen.blit(leftArrow, (75, 875))
             if leftArrowRectP5.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 tutorialPage = 1
+                pageFlipSFX.play()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -848,6 +864,7 @@ while runGame:
                 #Forfeit Click
                 if click == (7, 8) or click == (8, 8) or click == (7, 9) or click == (8, 9):
                     winner = 'Black'
+                    victorySFX.play()
                 if click in whitePiecesLocation:
                     selection = whitePiecesLocation.index(click)
                     #Check What Piece is Selected, Draws Castling Move if King is Selected
@@ -859,24 +876,25 @@ while runGame:
                     #Check if the Move Puts the King in Check
                     temp_location = whitePiecesLocation[selection]
                     whitePiecesLocation[selection] = click
-                    whitePiecesLocation[selection] = temp_location
 
-                    if kingInCheck():
-                        blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
-                        whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                        turn = 0
-                        selection = -1
-                        possibleMoves = []
-
-                    else:
-                        whitePiecesLocation[selection] = click
+                    if not kingInCheck():
+                        #The Move is Valid
                         whiteMoved[selection] = True
+                        pieceMovingSFX.play()
                         blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
                         whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
                         turn = 2
                         selection = -1
                         possibleMoves = []
 
+                    elif kingInCheck():
+                        #Undo Invalid Move, Leaves the King in Check
+                        whitePiecesLocation[selection] = temp_location  #Reset the moved status
+                        whiteMoved[selection] = False  #Reset the moved status 
+                        turn = 0
+                        selection = -1
+                        possibleMoves = []
+                        
                     #Black Piece Captured
                     if click in blackPiecesLocation:
                         landedOnBlackPiece = blackPiecesLocation.index(click)
@@ -887,6 +905,7 @@ while runGame:
                         blackPieces.pop((landedOnBlackPiece))
                         blackPiecesLocation.pop(landedOnBlackPiece)
                         blackMoved.pop(landedOnBlackPiece)
+                        pieceCapturedSFX.play()
 
                     #Black En Passant Piece Captured
                     if click == blackEnPassant:
@@ -895,6 +914,7 @@ while runGame:
                         blackPieces.pop((landedOnBlackPiece))
                         blackPiecesLocation.pop(landedOnBlackPiece)
                         blackMoved.pop(landedOnBlackPiece)
+                        pieceCapturedSFX.play()
 
                         blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
                         whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
@@ -906,42 +926,28 @@ while runGame:
                 elif selection != -1 and selectedPiece == 'King':
                     for k in range(len(castleMoves)):
                         if click == castleMoves[k][0]:
-                            #Check if Castling Puts the King in Check
-                            temp_location_king = whitePiecesLocation[selection]
-                            temp_location_rook = whitePiecesLocation[whitePiecesLocation.index(castleMoves[k][1])]
                             whitePiecesLocation[selection] = click
-                            whitePiecesLocation[whitePiecesLocation.index(castleMoves[k][1])] = castleMoves[k][1]
-                            whitePiecesLocation[selection] = temp_location_king
-                            whitePiecesLocation[whitePiecesLocation.index(castleMoves[k][1])] = temp_location_rook
+                            whiteMoved[selection] = True
+                            pieceMovingSFX.play()
+                            if click == (2, 7):
+                                rookCoordinates = (0, 7)
+                            elif click == (6, 7):
+                                rookCoordinates = (7, 7)
+                            rookIndex = whitePiecesLocation.index(rookCoordinates)
+                            whitePiecesLocation[rookIndex] = castleMoves[k][1]
 
-                            if kingInCheck():
-                                blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
-                                whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                                turn = 0
-                                selection = -1
-                                possibleMoves = []
-
-                            else:
-                                whitePiecesLocation[selection] = click
-                                whiteMoved[selection] = True
-                                if click == (2, 7):
-                                    rookCoordinates = (0, 7)
-                                elif click == (6, 7):
-                                    rookCoordinates = (7, 7)
-                                rookIndex = whitePiecesLocation.index(rookCoordinates)
-                                whitePiecesLocation[rookIndex] = castleMoves[k][1]
-                                
-                                blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
-                                whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                                turn = 2
-                                selection = -1
-                                possibleMoves = []
+                            blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
+                            whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
+                            turn = 2
+                            selection = -1
+                            possibleMoves = []
 
 #Allowing the Game to Understand a Left Mouse Button Click for Black's Turn
             if turn > 1:
                 #Forfeit Click
                 if click == (7, 8) or click == (8, 8) or click == (7, 9) or click == (8, 9):
                     winner = 'White'
+                    victorySFX.play()
                 if click in blackPiecesLocation:
                     selection = blackPiecesLocation.index(click)
                     #Check What Piece is Selected, Draws Castling Move if King is Selected
@@ -953,17 +959,14 @@ while runGame:
                     #Check if the Move Puts the King in Check
                     temp_location = blackPiecesLocation[selection]
                     blackPiecesLocation[selection] = click
-                    blackPiecesLocation[selection] = temp_location
 
                     if kingInCheck():
-                        blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
-                        whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                        turn = 2
-                        selection = -1
-                        possibleMoves = []
-
+                        #Undo Invalid Move, Leaves the King in Check
+                        blackPiecesLocation[selection] = temp_location
+                        blackMoved[selection] = False  #Reset the moved status
+                    
                     else:
-                        blackPiecesLocation[selection] = click
+                        #The Move is Valid
                         blackMoved[selection] = True
                         blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
                         whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
@@ -981,6 +984,7 @@ while runGame:
                         whitePieces.pop((landedOnWhitePiece))
                         whitePiecesLocation.pop(landedOnWhitePiece)
                         whiteMoved.pop(landedOnWhitePiece)
+                        pieceCapturedSFX.play()
 
                         blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
                         whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
@@ -995,6 +999,7 @@ while runGame:
                         whitePieces.pop((landedOnWhitePiece))
                         whitePiecesLocation.pop(landedOnWhitePiece)
                         whiteMoved.pop(landedOnWhitePiece)
+                        pieceCapturedSFX.play()
 
                         blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
                         whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
@@ -1006,36 +1011,21 @@ while runGame:
                 elif selection != -1 and selectedPiece == 'King':
                     for k in range(len(castleMoves)):
                         if click == castleMoves[k][0]:
-                            #Check if Castling Puts the King in Check
-                            temp_location_king = blackPiecesLocation[selection]
-                            temp_location_rook = blackPiecesLocation[blackPiecesLocation.index(castleMoves[k][1])]
                             blackPiecesLocation[selection] = click
-                            blackPiecesLocation[blackPiecesLocation.index(castleMoves[k][1])] = castleMoves[k][1]
-                            blackPiecesLocation[selection] = temp_location_king
-                            blackPiecesLocation[blackPiecesLocation.index(castleMoves[k][1])] = temp_location_rook
+                            blackMoved[selection] = True
+                            pieceMovingSFX.play()
+                            if click == (2, 0):
+                                rookCoordinates = (0, 0)
+                            elif click == (6, 0):
+                                rookCoordinates = (7, 0)
+                            rookIndex = blackPiecesLocation.index(rookCoordinates)
+                            blackPiecesLocation[rookIndex] = castleMoves[k][1]
 
-                            if kingInCheck():
-                                blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
-                                whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                                turn = 2
-                                selection = -1
-                                possibleMoves = []
-
-                            else:
-                                blackPiecesLocation[selection] = click
-                                blackMoved[selection] = True
-                                if click == (2, 0):
-                                    rookCoordinates = (0, 0)
-                                elif click == (6, 0):
-                                    rookCoordinates = (7, 0)
-                                rookIndex = blackPiecesLocation.index(rookCoordinates)
-                                blackPiecesLocation[rookIndex] = castleMoves[k][1]
-
-                                blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
-                                whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                                turn = 0
-                                selection = -1
-                                possibleMoves = []
+                            blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
+                            whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
+                            turn = 2
+                            selection = -1
+                            possibleMoves = []
 
 #Reinitialize the Game
         if event.type == pygame.KEYDOWN and gameOver:
