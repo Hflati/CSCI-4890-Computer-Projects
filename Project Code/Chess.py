@@ -34,14 +34,71 @@ def checkMoveOptions(pieces, locations, turns):
 
 #Check Possible Moves for Selected Piece
 def checkPossibleMoves():
+    global inCheck
     if turn < 2:
         moveOptionsList = whiteMoveOptions
+        king_position = whitePiecesLocation[whitePieces.index('King')]
+        enemy_moves = blackMoveOptions
+        friend_positions = whitePiecesLocation
+        enemy_pieces = blackPieces
     else:
         moveOptionsList = blackMoveOptions
+        king_position = blackPiecesLocation[blackPieces.index('King')]
+        enemy_moves = whiteMoveOptions
+        friend_positions = blackPiecesLocation
+        enemy_pieces = whitePieces
 
     possibleMoveOptions = moveOptionsList[selection]
+    intersectingMoveOptions = moveOptionsList[selection]
 
-    return possibleMoveOptions
+    intersectingMoves = []
+
+    # Check if the king is in check
+    if kingInCheck():
+        inCheck = True
+        # Find the attacker's position
+        attacker_positions = []
+        for moves in enemy_moves:
+            if king_position in moves:
+                attacker_positions.append(moves[0])
+
+        # Check if the selected piece can intercept the attacker or block its path
+        if selection != -1:
+            for move in possibleMoveOptions:
+                # Check if a friendly piece can block the path of the attacker
+                if move in friend_positions and isBetween(king_position, move, attacker_positions[0]):
+                    intersectingMoves.append(move)
+                # Check if the move is to capture the checking piece
+                elif move == attacker_positions[0]:
+                    intersectingMoves.append(move)
+        
+        # If no piece can intercept or block the attacker, only allow the king to move to safety
+        if not intersectingMoves:
+            for move in possibleMoveOptions:
+                if move == king_position or not kingInCheckAfterMove(king_position, move, enemy_moves):
+                    intersectingMoves.append(move)
+        intersectingMoves = intersectingMoveOptions
+    else:
+        # If the king is not in check, allow any possible move for the selected piece
+        intersectingMoves = possibleMoveOptions
+
+    return intersectingMoves
+
+def isBetween(pos1, pos2, pos3):
+    # Check if pos2 is between pos1 and pos3 horizontally, vertically, or diagonally
+    return (pos1[0] == pos2[0] == pos3[0] and (pos1[1] < pos2[1] < pos3[1] or pos1[1] > pos2[1] > pos3[1])) or \
+           (pos1[1] == pos2[1] == pos3[1] and (pos1[0] < pos2[0] < pos3[0] or pos1[0] > pos2[0] > pos3[0])) or \
+           (abs(pos1[0] - pos2[0]) == abs(pos1[0] - pos3[0]) == abs(pos2[0] - pos3[0]) and
+            abs(pos1[1] - pos2[1]) == abs(pos1[1] - pos3[1]) == abs(pos2[1] - pos3[1]))
+
+def kingInCheckAfterMove(king_position, move, enemy_moves):
+    # Simulate the king's move and check if it is still under attack after the move
+    king_after_move = move if move != king_position else None
+    for moves in enemy_moves:
+        if king_after_move and king_after_move in moves:
+            return True
+    return False
+
 
 #Check Possible Pawn Moves
 def checkPawnMoves(position, color):
@@ -562,7 +619,7 @@ def kingInCheck():
         king_location = blackPiecesLocation[king_index]
         enemy_moves = whiteMoveOptions
 
-    for moves in enemy_moves:
+    for moves in enemy_moves: #Pawn Forward Move Technically In List
         if king_location in moves:
             inCheck = True
             break  #Exit the loop as soon as it finds one move that puts the king in check
@@ -850,6 +907,9 @@ while runGame:
         drawMoves(possibleMoves)
         if selectedPiece == 'King':
             drawCastling(castleMoves)
+        if inCheck:
+            intersectingMoves = checkPossibleMoves()
+            drawMoves(intersectingMoves)
 
 #Clicking Exit Button
     for event in pygame.event.get():
@@ -891,13 +951,21 @@ while runGame:
 
                     #In Check
                     elif kingInCheck():
-                        #Undo Invalid Move, Leaves the King in Check
-                        whitePiecesLocation[selection] = temp_location  #Reset the moved status
-                        whiteMoved[selection] = False  #Reset the moved status 
-                        turn = 0
-                        selection = -1
-                        possibleMoves = []
-                        
+                        if click in intersectingMoves and selection != -1:
+                            whiteMoved[selection] = True
+                            pieceMovingSFX.play()
+                            blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
+                            whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
+                            turn = 2
+                            selection = -1
+                            possibleMoves = []
+                        else:#Undo Invalid Move, Leaves the King in Check
+                            whitePiecesLocation[selection] = temp_location  #Reset the moved status
+                            whiteMoved[selection] = False  #Reset the moved status 
+                            turn = 0
+                            selection = -1
+                            possibleMoves = []
+                            
                     #Black Piece Captured
                     if click in blackPiecesLocation:
                         landedOnBlackPiece = blackPiecesLocation.index(click)
@@ -909,6 +977,12 @@ while runGame:
                         blackPiecesLocation.pop(landedOnBlackPiece)
                         blackMoved.pop(landedOnBlackPiece)
                         pieceCapturedSFX.play()
+
+                        blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
+                        whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
+                        turn = 2
+                        selection = -1
+                        possibleMoves = []
 
                     #Black En Passant Piece Captured
                     if click == blackEnPassant:
@@ -1026,7 +1100,7 @@ while runGame:
 
                             blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
                             whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
-                            turn = 2
+                            turn = 0
                             selection = -1
                             possibleMoves = []
 
