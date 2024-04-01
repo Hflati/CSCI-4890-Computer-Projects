@@ -147,12 +147,6 @@ runMainMenu = True
 runGame = False
 runTutorial = False
 runCPUGame = False
-global previousLocation
-previousLocation = ''
-global previousPiece
-previousPiece = ''
-global previousMove
-previousMove = []
 
 class Button:
     def __init__(self, txt, pos):

@@ -93,9 +93,9 @@ def checkPossibleMoves():
 
     return intersectingMoves
 
+#Check if pos2 (Blocking Move) is between pos1 (King in Check) and pos3 (Enemy Attacker) horizontally, vertically, or diagonally
 def isBetween(pos1, pos2, pos3):
-    # Check if pos2 is between pos1 and pos3 horizontally, vertically, or diagonally
-    # Horizontal (Same x coordinate, pos2 y coordinate is between pos1 and pos3)
+    #Horizontal (Same x coordinate, pos2 y coordinate is between pos1 and pos3)
     if (pos1[0] == pos2[0] == pos3[0] and (pos1[1] < pos2[1] < pos3[1] or pos1[1] > pos2[1] > pos3[1])):
         return True
 
@@ -110,6 +110,7 @@ def isBetween(pos1, pos2, pos3):
 
     return False
 
+#Check if king is in check after moving
 def kingInCheckAfterMove(king_position, move, enemy_moves):
     # Simulate the king's move and check if it is still under attack after the move
     for moves in enemy_moves:
@@ -665,85 +666,45 @@ def drawGameOver():
 blackMoveOptions = checkMoveOptions(blackPieces, blackPiecesLocation, 'Black')
 whiteMoveOptions = checkMoveOptions(whitePieces, whitePiecesLocation, 'White')
 
-def makeRandomMove():
-    global turn, blackPiecesLocation, blackMoveOptions
-
-    #Black's turn (AI's turn)
-    if turn == 2: 
-        #Choose a random piece to move
-        aiPieceIndex = random.randint(0, len(blackPiecesLocation) - 1)
-
-        #Choose a random valid move for the selected piece
-        aiPossibleMoves = blackMoveOptions[aiPieceIndex]
-        while not aiPossibleMoves:
-            aiPieceIndex = random.randint(0, len(blackPiecesLocation) - 1)
-            aiPossibleMoves = blackMoveOptions[aiPieceIndex]
-            pass
-        
-        aiMove = random.choice(aiPossibleMoves)
-
-        if aiMove in possibleMoves and selection != -1:
-            blackEnPassant = checkEnPassant(blackPiecesLocation[selection], aiMove)
-            blackPiecesLocation[selection] = aiMove
-            blackMoved[selection] = True
-        #White Piece Captured
-        if aiMove in whitePiecesLocation:
-            landedOnWhitePiece = whitePiecesLocation.index(aiMove)
-            blackCaptured.append(whitePieces[landedOnWhitePiece])
-            # If Statement for White King in Check
-            if whitePieces[landedOnWhitePiece] == 'King':
-                winner = 'Black'
-
-            whitePieces.pop((landedOnWhitePiece))
-            whitePiecesLocation.pop(landedOnWhitePiece)
-            whiteMoved.pop(landedOnWhitePiece)
-
-        #White En Passant Piece Captured
-        if aiMove == whiteEnPassant:
-            landedOnWhitePiece = whitePiecesLocation.index((whiteEnPassant[0], whiteEnPassant[1] - 1))
-            blackCaptured.append(whitePieces[landedOnWhitePiece])
-            whitePieces.pop((landedOnWhitePiece))
-            whitePiecesLocation.pop(landedOnWhitePiece)
-            whiteMoved.pop(landedOnWhitePiece)
-
-        # Update the board state
-        blackPiecesLocation[aiPieceIndex] = aiMove
-        turn = 0
-
 #AI Move Function
 def makeSmartMove():
     global turn, blackPiecesLocation, blackMoveOptions
 
     #Black's turn (AI's turn)
     if turn == 2: 
-        # Evaluate available moves based on simple strategy
+        #Evaluate available moves based on simple strategy
         best_move_score = float('-inf')
-        best_move = None
- 
+        best_moves = []
+
         #Iterate over black pieces
         for piece_index, possible_moves in enumerate(blackMoveOptions):
             piece = blackPiecesLocation[piece_index]
             for move in possible_moves:
-                # Simulate the move and evaluate the resulting board state
+                #Simulate the move and evaluate the resulting board state
                 score = evaluateMove(piece, move)
                 if score > best_move_score:
                     best_move_score = score
-                    best_move = (piece, move)
- 
-        #Make the best move found
-        if best_move:
-            black_piece_index = blackPiecesLocation.index(best_move[0])
-            blackMove = best_move[1]
-            blackPiecesLocation[black_piece_index] = blackMove
+                    best_moves = [(piece, move)]  #Start new list with better move
+                elif score == best_move_score:
+                    best_moves.append((piece, move))  #Add to existing list of equally good moves
+
+        #Make a random choice among the best moves found
+        if best_moves:
+            piece_index, new_location = random.choice(best_moves)
+            #Find the index of the piece's current location
+            current_location_index = blackPiecesLocation.index(piece_index)
+            #Update the piece's location with the new location
+            blackPiecesLocation[current_location_index] = new_location
             turn = 0
 
-        if blackMove in possibleMoves and selection != -1:
-            blackEnPassant = checkEnPassant(blackPiecesLocation[selection], blackMove)
-            blackPiecesLocation[selection] = blackMove
+        if new_location in possibleMoves and selection != -1:
+            blackEnPassant = checkEnPassant(blackPiecesLocation[selection], new_location)
+            blackPiecesLocation[selection] = new_location
             blackMoved[selection] = True
+
         #White Piece Captured
-        if blackMove in whitePiecesLocation:
-            landedOnWhitePiece = whitePiecesLocation.index(blackMove)
+        if new_location in whitePiecesLocation:
+            landedOnWhitePiece = whitePiecesLocation.index(new_location)
             blackCaptured.append(whitePieces[landedOnWhitePiece])
             #If Statement for White King in Check
             if whitePieces[landedOnWhitePiece] == 'King':
@@ -754,7 +715,7 @@ def makeSmartMove():
             whiteMoved.pop(landedOnWhitePiece)
 
         #White En Passant Piece Captured
-        if blackMove == whiteEnPassant:
+        if new_location == whiteEnPassant:
             landedOnWhitePiece = whitePiecesLocation.index((whiteEnPassant[0], whiteEnPassant[1] - 1))
             blackCaptured.append(whitePieces[landedOnWhitePiece])
             whitePieces.pop((landedOnWhitePiece))
@@ -763,8 +724,8 @@ def makeSmartMove():
 
 #Assigns Point Values to Pieces To Allow AI to Choose what to Attack
 def evaluateMove(piece, move):
-    piece_value = 0  #Initialize piece value
-    move_score = 0   #Initialize move score
+    piece_value = 0 #Initialize piece value
+    move_score = 0 #Initialize move score
 
     #Assign values to pieces
     if piece == 'Pawn':
@@ -778,7 +739,7 @@ def evaluateMove(piece, move):
     elif piece == 'Queen':
         piece_value = 9
     elif piece == 'King':
-        piece_value = 100  #High value to prioritize king safety
+        piece_value = 100 #High value to prioritize king safety
 
     #Evaluate move based on destination square
     destination = move
@@ -993,6 +954,7 @@ while runTutorial:
 
     pygame.display.flip()
 
+#Multiplayer Game Loop
 while runGame:
     timer.tick(fps)
 
@@ -1280,6 +1242,7 @@ while runGame:
 
     pygame.display.flip()
 
+#CPU Game Loop
 while runCPUGame:
     timer.tick(fps)
 
