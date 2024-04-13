@@ -83,13 +83,32 @@ def checkPossibleMoves():
                     if selectedPiece == 'King' and not kingInCheckAfterMove(king_position, move, enemy_moves):
                         intersectingMoves.append(move)
 
-        #Check for checkmate
+        # Check for checkmate
         if len(intersectingMoves) == 0:
-            checkmate = True
+            # If no piece can move and the king is in check, it's checkmate
+            for piece in pieces:
+                if piece == 'Pawn':
+                    pawnCheckmate = True
+                if piece == 'Rook':
+                    rookCheckmate = True
+                if piece == 'Knight':
+                    knightCheckmate = True
+                if piece == 'Bishop':
+                    bishopCheckmate = True
+                if piece == 'Queen':
+                    queenCheckmate = True
+                if piece == 'King':
+                    kingCheckmate = True
+            if pawnCheckmate and rookCheckmate and knightCheckmate and bishopCheckmate and queenCheckmate and kingCheckmate:
+                checkmate = True
 
     else:
         # If the king is not in check, allow any possible move for the selected piece
         intersectingMoves = possibleMoveOptions
+
+    # Check for checkmate when no pieces have moves
+    if all(not moveList for moveList in moveOptionsList):
+        checkmate = True
 
     return intersectingMoves
 
@@ -765,7 +784,8 @@ def evaluateMove(piece, move):
     #Return the total move score
     return move_score
 
-#Main Menu
+#while inMenu:
+    #Main Menu
 while runMainMenu:
     screen.fill(color)
     timer.tick(fps)
@@ -775,9 +795,11 @@ while runMainMenu:
         if command == 1:
             runCPUGame = True
             runMainMenu = False
+            #inMenu = False
         if command == 2:
             runGame = True
             runMainMenu = False
+            #inMenu = False
         if command == 3:
             runTutorial = True
             runMainMenu = False
@@ -841,8 +863,9 @@ while runTutorial:
             screen.blit(leftArrow, (875, 25))
             if leftArrowRectMainMenu.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                 runTutorial = False
-                drawMainMenu()
                 mainMenu = True
+                runMainMenu = True
+                drawMainMenu()
 
         #Special Moves Tutorial Page
         if tutorialPage == 2:
@@ -1279,7 +1302,7 @@ while runCPUGame:
 #Clicking Exit Button
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            runGame = False
+            runCPUGame = False
 
 #Allowing the Game to Understand a Left Mouse Button Click for White's Turn
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not gameOver:

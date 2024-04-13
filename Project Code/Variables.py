@@ -147,6 +147,7 @@ runMainMenu = True
 runGame = False
 runTutorial = False
 runCPUGame = False
+#inMenu = True
 
 class Button:
     def __init__(self, txt, pos):
